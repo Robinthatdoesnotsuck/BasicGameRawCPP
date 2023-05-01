@@ -2,11 +2,12 @@
 
 // thickness of the paddle rectangle
 const int thickness = 15;
-
+const int paddleH = 768/6;
 Game::Game() :mWindow(nullptr)
 			 ,mRenderer(nullptr)
 			 ,mIsRunning(true)
-			 ,mTixcksCount(0) {}
+			 ,mTixcksCount(0) 
+			 ,mPaddleDir(0) {}
 
 Game::~Game() {
 	
@@ -95,6 +96,16 @@ void Game::ProcessInput() {
 	// And it will be dealt with like it was an array
 	const Uint8* state = SDL_GetKeyboardState(NULL);
 	// Here if we press escape, we will close the game
+
+	// Handling paddle movement
+	mPaddleDir = 0;
+	if (state[SDL_SCANCODE_W]) {
+		// In Raw graphics env it is usally the negative y the up direction
+		mPaddleDir -= 1;
+	}
+	if (state[SDL_SCANCODE_S]) {
+		mPaddleDir += 1;
+	}
 	if (state[SDL_SCANCODE_ESCAPE]) {
 		mIsRunning = false;
 	}
@@ -116,6 +127,18 @@ void Game::UpdateGame() {
 	mTicksCount = SDL_GetTicks();
 	// TODO: Update objects as function of delta time
 	
+	// Apply Paddle movement according to the direction
+	if (mPaddleDir != 0) {
+		mPaddlePos.y += mPaddleDir * 300.0f * deltaTime;
+		// Make some limits so that the paddle doesn't wander of the screen
+		if (mPaddlePos.y < (paddleH/2.0f + thickness)) {
+			mPaddlePos.y = paddleH/2.0f + thickness;
+		}
+		else if (mPaddlePos.y > (768.0f - paddleH/2.0f - thickness)) {
+			mPaddlePos.y = 768.0f - paddleH/2.0f - thickness;
+		}
+
+	}
 }
 
 void Game::GenerateOutput() {

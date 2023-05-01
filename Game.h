@@ -32,6 +32,7 @@ private:
 	
 	// Positions of game objects as vectors in 2D
 	Vector2 mPaddlePos;
+	int mPaddleDir;
 	Vector2 mBallPos;
 
 	// Delta time 
