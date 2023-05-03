@@ -33,8 +33,9 @@ private:
 	// Positions of game objects as vectors in 2D
 	Vector2 mPaddlePos;
 	int mPaddleDir;
-	Vector2 mBallPos;
 
+	Vector2 mBallPos;
+	Vector2 mBallVel;
 	// Delta time 
 	Uint32 mTicksCount;
 	// A flag that will help us to determine if the game is running

@@ -6,8 +6,9 @@ const int paddleH = 768/6;
 Game::Game() :mWindow(nullptr)
 			 ,mRenderer(nullptr)
 			 ,mIsRunning(true)
-			 ,mTixcksCount(0) 
-			 ,mPaddleDir(0) {}
+			 ,mTicksCount(0) 
+			 ,mPaddleDir(0)
+			{}
 
 Game::~Game() {
 	
@@ -54,10 +55,14 @@ bool Game::Initialize() {
 		SDL_Log("Unable to create renderer: %s", SDL_GetError());
 		return false;
 	}
+
 	mPaddlePos.x = 15.0f;
 	mPaddlePos.y = 384.0f;
 	mBallPos.x = 512.0f;
 	mBallPos.y = 384.0f;
+	mBallVel.x = -200.0f;
+	mBallVel.y = -235.0f;
+
 	return true;
 }
 
@@ -139,6 +144,35 @@ void Game::UpdateGame() {
 		}
 
 	}
+
+	
+	float diff = std::abs(mBallPos.y - mPaddlePos.y);
+	// Handling been stuck on walls
+	if (mBallPos.y <= thickness && mBallVel.y < 0.0f) {
+		mBallVel.y *= -1.0f;
+	}
+	if (mBallPos.y >= (768.0f - thickness) && mBallVel.y > 0.0f) {
+		mBallVel.y *= -1.0f;
+	}
+
+	if (mBallPos.x >= (1024.0f - thickness) && mBallVel.x > 0.0f) {
+		mBallVel.x *= -1.0f;
+	}
+
+	// Paddle hitting balls
+	if (
+		// Check if the ball is too high or low
+		diff <= paddleH/2.0f &&
+		// Check that the ball is on our x range of values for the paddle
+		mBallPos.x <= 25.0f && mBallPos.x >= 20.0f &&
+		// Check if the ball velocity is less than 0 to know that it didn't bounce of
+		mBallVel.x < 0.0
+	) {
+		mBallVel.x *= -1.0f;
+	}
+	// Handling Balls 7w7
+	mBallPos.x += mBallVel.x * deltaTime;
+	mBallPos.y += mBallVel.y * deltaTime;
 }
 
 void Game::GenerateOutput() {
