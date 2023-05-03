@@ -56,8 +56,13 @@ bool Game::Initialize() {
 		return false;
 	}
 
+	
+
 	mPaddlePos.x = 15.0f;
 	mPaddlePos.y = 384.0f;
+	mPaddlePosPlayer2.x = 1009.0f;
+	mPaddlePosPlayer2.y = 384.0f;
+
 	mBallPos.x = 512.0f;
 	mBallPos.y = 384.0f;
 	mBallVel.x = -200.0f;
@@ -111,6 +116,14 @@ void Game::ProcessInput() {
 	if (state[SDL_SCANCODE_S]) {
 		mPaddleDir += 1;
 	}
+	mPaddleDirPlayer2 = 0;
+	if (state[SDL_SCANCODE_I]) {
+		mPaddleDirPlayer2 -= 1;
+	}
+	if (state[SDL_SCANCODE_K]) {
+		mPaddleDirPlayer2 += 1;
+	}
+
 	if (state[SDL_SCANCODE_ESCAPE]) {
 		mIsRunning = false;
 	}
@@ -145,6 +158,17 @@ void Game::UpdateGame() {
 
 	}
 
+	if (mPaddleDirPlayer2 != 0) {
+		mPaddlePosPlayer2.y += mPaddleDirPlayer2 * 300.0f * deltaTime;
+
+		if (mPaddlePosPlayer2.y < (paddleH/2.0f + thickness)) {
+			mPaddlePosPlayer2.y = paddleH/2.0f + thickness;
+		}
+		else if (mPaddlePosPlayer2.y >(768.0f - paddleH/2.0f - thickness)) {
+			mPaddlePosPlayer2.y = 768.0f - paddleH/2.0f - thickness;
+		}
+	}
+
 	
 	float diff = std::abs(mBallPos.y - mPaddlePos.y);
 	// Handling been stuck on walls
@@ -155,10 +179,6 @@ void Game::UpdateGame() {
 		mBallVel.y *= -1.0f;
 	}
 
-	if (mBallPos.x >= (1024.0f - thickness) && mBallVel.x > 0.0f) {
-		mBallVel.x *= -1.0f;
-	}
-
 	// Paddle hitting balls
 	if (
 		// Check if the ball is too high or low
@@ -167,6 +187,19 @@ void Game::UpdateGame() {
 		mBallPos.x <= 25.0f && mBallPos.x >= 20.0f &&
 		// Check if the ball velocity is less than 0 to know that it didn't bounce of
 		mBallVel.x < 0.0
+	) {
+		mBallVel.x *= -1.0f;
+	}
+
+	float diffPlayer2 = std::abs(mBallPos.y - mPaddlePosPlayer2.y);
+	// Paddle 2 hitting balls
+	if (
+		// Check if the ball is too high or low
+		diffPlayer2 <= paddleH/2.0f &&
+		// Check that the ball is on our x range of values for the paddle
+		mBallPos.x >= 1002.5f && mBallPos.x <= 1007.5f &&
+		// Check if the ball velocity is less than 0 to know that it didn't bounce of
+		mBallVel.x > 0.0
 	) {
 		mBallVel.x *= -1.0f;
 	}
@@ -211,16 +244,6 @@ void Game::GenerateOutput() {
 
 	SDL_RenderFillRect(mRenderer, &bottomWall);
 
-	// Right Wall
-	SDL_Rect rightWall{
-		1024 - thickness,
-		0,
-		thickness,
-		768
-	};
-	
-	SDL_RenderFillRect(mRenderer, &rightWall);
-
 	// To Draw the ball 
 	SDL_Rect ball {
 		static_cast<int>(mBallPos.x - thickness/2),
@@ -241,6 +264,15 @@ void Game::GenerateOutput() {
 
 	SDL_RenderFillRect(mRenderer, &paddle);
 
+	// To Draw the paddle
+	SDL_Rect paddle2player {
+		static_cast<int>( mPaddlePosPlayer2.x - thickness/2),
+		static_cast<int>(mPaddlePosPlayer2.y - 768/12),
+		thickness,
+		768/6
+	};
+
+	SDL_RenderFillRect(mRenderer, &paddle2player);
+
 	SDL_RenderPresent(mRenderer);
 }
-

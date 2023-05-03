@@ -1,5 +1,6 @@
 #pragma once
 #include <SDL2/SDL.h>
+#include "Paddle.h"
 
 struct Vector2 {
 	float x;
@@ -34,10 +35,16 @@ private:
 	Vector2 mPaddlePos;
 	int mPaddleDir;
 
+	Vector2 mPaddlePosPlayer2;
+	int mPaddleDirPlayer2;
+
 	Vector2 mBallPos;
 	Vector2 mBallVel;
 	// Delta time 
 	Uint32 mTicksCount;
+
+	Paddle player1;
+	Paddle player2;
 	// A flag that will help us to determine if the game is running
 	bool mIsRunning;
 
