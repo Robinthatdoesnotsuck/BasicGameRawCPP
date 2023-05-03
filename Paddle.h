@@ -14,7 +14,6 @@ public:
 
     Vector2 getPosition();
     int getDirection();
-private:
     Vector2 mPaddlePos;
     int mPaddleDir;
 };

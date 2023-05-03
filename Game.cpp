@@ -8,6 +8,8 @@ Game::Game() :mWindow(nullptr)
 			 ,mIsRunning(true)
 			 ,mTicksCount(0) 
 			 ,mPaddleDir(0)
+			 ,player1(15.0f, 384.0f)
+			 ,player2(1009.0f, 384.0f)
 			{}
 
 Game::~Game() {
@@ -56,13 +58,6 @@ bool Game::Initialize() {
 		return false;
 	}
 
-	
-
-	mPaddlePos.x = 15.0f;
-	mPaddlePos.y = 384.0f;
-	mPaddlePosPlayer2.x = 1009.0f;
-	mPaddlePosPlayer2.y = 384.0f;
-
 	mBallPos.x = 512.0f;
 	mBallPos.y = 384.0f;
 	mBallVel.x = -200.0f;
@@ -108,20 +103,20 @@ void Game::ProcessInput() {
 	// Here if we press escape, we will close the game
 
 	// Handling paddle movement
-	mPaddleDir = 0;
+	player1.mPaddleDir = 0;
 	if (state[SDL_SCANCODE_W]) {
 		// In Raw graphics env it is usally the negative y the up direction
-		mPaddleDir -= 1;
+		player1.mPaddleDir -= 1;
 	}
 	if (state[SDL_SCANCODE_S]) {
-		mPaddleDir += 1;
+		player1.mPaddleDir += 1;
 	}
-	mPaddleDirPlayer2 = 0;
+	player2.mPaddleDir = 0;
 	if (state[SDL_SCANCODE_I]) {
-		mPaddleDirPlayer2 -= 1;
+		player2.mPaddleDir  -= 1;
 	}
 	if (state[SDL_SCANCODE_K]) {
-		mPaddleDirPlayer2 += 1;
+		player2.mPaddleDir  += 1;
 	}
 
 	if (state[SDL_SCANCODE_ESCAPE]) {
@@ -146,31 +141,31 @@ void Game::UpdateGame() {
 	// TODO: Update objects as function of delta time
 	
 	// Apply Paddle movement according to the direction
-	if (mPaddleDir != 0) {
-		mPaddlePos.y += mPaddleDir * 300.0f * deltaTime;
+	if (player1.mPaddleDir  != 0) {
+		player1.mPaddlePos.y += player1.mPaddleDir * 300.0f * deltaTime;
 		// Make some limits so that the paddle doesn't wander of the screen
-		if (mPaddlePos.y < (paddleH/2.0f + thickness)) {
-			mPaddlePos.y = paddleH/2.0f + thickness;
+		if (player1.mPaddlePos.y < (paddleH/2.0f + thickness)) {
+			player1.mPaddlePos.y = paddleH/2.0f + thickness;
 		}
-		else if (mPaddlePos.y > (768.0f - paddleH/2.0f - thickness)) {
-			mPaddlePos.y = 768.0f - paddleH/2.0f - thickness;
+		else if (player1.mPaddlePos.y > (768.0f - paddleH/2.0f - thickness)) {
+			player1.mPaddlePos.y = 768.0f - paddleH/2.0f - thickness;
 		}
 
 	}
 
-	if (mPaddleDirPlayer2 != 0) {
-		mPaddlePosPlayer2.y += mPaddleDirPlayer2 * 300.0f * deltaTime;
+	if (player2.mPaddlePos.y != 0) {
+		player2.mPaddlePos.y += player2.mPaddleDir * 300.0f * deltaTime;
 
-		if (mPaddlePosPlayer2.y < (paddleH/2.0f + thickness)) {
-			mPaddlePosPlayer2.y = paddleH/2.0f + thickness;
+		if (player2.mPaddlePos.y < (paddleH/2.0f + thickness)) {
+			player2.mPaddlePos.y = paddleH/2.0f + thickness;
 		}
-		else if (mPaddlePosPlayer2.y >(768.0f - paddleH/2.0f - thickness)) {
-			mPaddlePosPlayer2.y = 768.0f - paddleH/2.0f - thickness;
+		else if (player2.mPaddlePos.y >(768.0f - paddleH/2.0f - thickness)) {
+			player2.mPaddlePos.y = 768.0f - paddleH/2.0f - thickness;
 		}
 	}
 
 	
-	float diff = std::abs(mBallPos.y - mPaddlePos.y);
+	
 	// Handling been stuck on walls
 	if (mBallPos.y <= thickness && mBallVel.y < 0.0f) {
 		mBallVel.y *= -1.0f;
@@ -179,6 +174,7 @@ void Game::UpdateGame() {
 		mBallVel.y *= -1.0f;
 	}
 
+	float diff = std::abs(player1.mPaddlePos.y - player1.mPaddlePos.y);
 	// Paddle hitting balls
 	if (
 		// Check if the ball is too high or low
@@ -191,7 +187,7 @@ void Game::UpdateGame() {
 		mBallVel.x *= -1.0f;
 	}
 
-	float diffPlayer2 = std::abs(mBallPos.y - mPaddlePosPlayer2.y);
+	float diffPlayer2 = std::abs(mBallPos.y - player2.mPaddlePos.y);
 	// Paddle 2 hitting balls
 	if (
 		// Check if the ball is too high or low
@@ -256,8 +252,8 @@ void Game::GenerateOutput() {
 
 	// To Draw the paddle
 	SDL_Rect paddle {
-		static_cast<int>(mPaddlePos.x - thickness/2),
-		static_cast<int>(mPaddlePos.y - 768/12),
+		static_cast<int>(player1.mPaddlePos.x - thickness/2),
+		static_cast<int>(player1.mPaddlePos.y - 768/12),
 		thickness,
 		768/6
 	};
@@ -266,8 +262,8 @@ void Game::GenerateOutput() {
 
 	// To Draw the paddle
 	SDL_Rect paddle2player {
-		static_cast<int>( mPaddlePosPlayer2.x - thickness/2),
-		static_cast<int>(mPaddlePosPlayer2.y - 768/12),
+		static_cast<int>( player2.mPaddlePos.x - thickness/2),
+		static_cast<int>(player2.mPaddlePos.y - 768/12),
 		thickness,
 		768/6
 	};

@@ -2,11 +2,6 @@
 #include <SDL2/SDL.h>
 #include "Paddle.h"
 
-struct Vector2 {
-	float x;
-	float y;
-};
-
 class Game {
 public:
 	// Init game
