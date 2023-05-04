@@ -134,7 +134,7 @@ void Game::UpdateGame() {
 
 	// Delta time is the differenc e n ticks from the last frame 
 	// converted to seconds
-	float deltaTime = (SDL_GetTicks() - mTicksCount) / 1000.0f;
+	float deltaTime = (SDL_GetTicks() - mTicksCount) / 1000.0f; 
 
 	// Update the ticks count for the next frame
 	mTicksCount = SDL_GetTicks();
