@@ -6,20 +6,20 @@ const int paddleH = 768/6;
 Game::Game() :mWindow(nullptr)
 			 ,mRenderer(nullptr)
 			 ,mIsRunning(true)
-			 ,mTicksCount(0) 
+			 ,mTicksCount(0)
 			 ,mPaddleDir(0)
 			 ,player1(15.0f, 384.0f)
 			 ,player2(1009.0f, 384.0f)
 			{}
 
 Game::~Game() {
-	
+
 }
 
 bool Game::Initialize() {
 	int sdlResult = SDL_Init(SDL_INIT_VIDEO);
-
-	// The SDL_Init returns an integer value this value 
+    int sdlImgResult = IMG_Init(IMG_INIT_PNG);
+	// The SDL_Init returns an integer value this value
 	// if not zero means it failed ,we should watch out for that
 	if(sdlResult != 0) {
 
@@ -28,7 +28,11 @@ bool Game::Initialize() {
 		SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
 		return false;
 	}
-
+    // Initializing image
+    if (sdlImgResult == 0) {
+        SDL_Log("Failted to initialize SDL_Image:", SDL_GetError());
+        return false;
+    }
 	// If nothing fishy happened we should be able to make the window
 	mWindow = SDL_CreateWindow(
 		"Game Programming in C++ (Chapter 1)", // Window title
@@ -44,14 +48,14 @@ bool Game::Initialize() {
 		SDL_Log("Unable to create Window: %s",SDL_GetError());
 		return false;
 	}
-	
+
 	// We initialize the renderer cause like we need graphics
 	mRenderer = SDL_CreateRenderer(
 		mWindow, // The needed window that we will use to render graphics, this is always a pointer
 		-1,		 // This is usually -1, cause it is telling SDL to decide the graphics driver, usually you change this if you have multiple windows
-		SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC // Flags needed for, the first one makes use of any graphics hardware and the other to enable vsync 
+		SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC // Flags needed for, the first one makes use of any graphics hardware and the other to enable vsync
 	);
-	
+
 	// Since the renderer might return a nullptr if it fails at initializing we need to check for that
 	if(!mRenderer) {
 		SDL_Log("Unable to create renderer: %s", SDL_GetError());
@@ -81,6 +85,10 @@ void Game::Shutdown() {
 	// We need to also Destroy our renderer
 	SDL_DestroyRenderer(mRenderer);
 	SDL_Quit();
+
+    while (!mActors.empty()) {
+        delete mActors.back();
+    }
 }
 
 void Game::ProcessInput() {
@@ -132,14 +140,14 @@ void Game::UpdateGame() {
 	while (!SDL_TICKS_PASSED(SDL_GetTicks(), mTicksCount + 16))
 		;
 
-	// Delta time is the differenc e n ticks from the last frame 
+	// Delta time is the differenc e n ticks from the last frame
 	// converted to seconds
-	float deltaTime = (SDL_GetTicks() - mTicksCount) / 1000.0f; 
+	float deltaTime = (SDL_GetTicks() - mTicksCount) / 1000.0f;
 
 	// Update the ticks count for the next frame
 	mTicksCount = SDL_GetTicks();
 	// TODO: Update objects as function of delta time
-	
+
 	// Apply Paddle movement according to the direction
 	if (player1.mPaddleDir  != 0) {
 		player1.mPaddlePos.y += player1.mPaddleDir * 300.0f * deltaTime;
@@ -164,8 +172,8 @@ void Game::UpdateGame() {
 		}
 	}
 
-	
-	
+
+
 	// Handling been stuck on walls
 	if (mBallPos.y <= thickness && mBallVel.y < 0.0f) {
 		mBallVel.y *= -1.0f;
@@ -202,6 +210,34 @@ void Game::UpdateGame() {
 	// Handling Balls 7w7
 	mBallPos.x += mBallVel.x * deltaTime;
 	mBallPos.y += mBallVel.y * deltaTime;
+
+	// Updating Actors
+
+	mUpdatingActors = true;
+	for (auto actor : mActors) {
+		actor->Update(deltaTime);
+	}
+
+	mUpdatingActors = false;
+
+	// Move pending actors to the actors on scene
+	for (auto pending : mPendingActors) {
+		mActors.emplace_back(pending);
+	}
+	mPendingActors.clear();
+
+	// Adding any dead actors to a temporal vector
+	std::vector<Actor*> deadActors;
+	for (auto actor : mActors) {
+		if(actor->getState() == Actor::EDead) {
+			deadActors.emplace_back(actor);
+		}
+	}
+
+	// Delete dead actors from mActors
+	for (auto actor : deadActors) {
+		delete actor;
+	}
 }
 
 void Game::GenerateOutput() {
@@ -228,7 +264,7 @@ void Game::GenerateOutput() {
 	};
 
 	SDL_RenderFillRect(mRenderer, &topWall);
-	
+
 	// Bottom wall
 	// To draw the rectangle wall
 	SDL_Rect bottomWall{
@@ -240,7 +276,7 @@ void Game::GenerateOutput() {
 
 	SDL_RenderFillRect(mRenderer, &bottomWall);
 
-	// To Draw the ball 
+	// To Draw the ball
 	SDL_Rect ball {
 		static_cast<int>(mBallPos.x - thickness/2),
 		static_cast<int>(mBallPos.y - thickness/2),
@@ -271,4 +307,41 @@ void Game::GenerateOutput() {
 	SDL_RenderFillRect(mRenderer, &paddle2player);
 
 	SDL_RenderPresent(mRenderer);
+}
+
+void Game::AddActor(Actor* actor) {
+	if(mUpdatingActors) {
+		mPendingActors.emplace_back(actor);
+	} else {
+		mActors.emplace_back(actor);
+	}
+}
+
+void Game::RemoveActor(Actor* actor) {
+
+	// Searching on the Actors on scene vector
+	auto element = std::find(mActors.begin(), mActors.end(), actor);
+	(element != std::end(mActors))
+		? mActors.erase(element)
+		: mPendingActors.erase(element);
+}
+
+SDL_Texture* Game::LoadTexture(const char* fileName) {
+    SDL_Surface* surf = IMG_Load(fileName);
+    if (!surf) {
+        SDL_Log("failed to load texture file %s", fileName);
+        return nullptr;
+    }
+
+    // Create texture from surface
+    SDL_Texture* text = SDL_CreateTextureFromSurface(mRenderer, surf);
+    SDL_FreeSurface(surf);
+    if (!text) {
+        SDL_Log("Failed to convert surface to texture for %s" , fileName);
+    }
+    return text;
+}
+
+void Game::LoadData() {
+
 }

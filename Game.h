@@ -1,6 +1,13 @@
 #pragma once
 #include <SDL2/SDL.h>
+#include <algorithm>
+#include <iostream>
+#include <iterator>
+#include <vector>
+#include <SDL2/SDL_image.h>
 #include "Paddle.h"
+#include "Actor.h"
+
 
 class Game {
 public:
@@ -13,19 +20,29 @@ public:
 	bool Initialize();
 	void RunLoop();
 	void Shutdown();
+	// Actor related functions
+	void AddActor(Actor* actor);
+	void RemoveActor(Actor* actor);
+    void LoadData();
+    SDL_Texture* LoadTexture(const char* fileName);
 private:
 
-	// Helper functions for the game loop, they are self explained	
+	// Helper functions for the game loop, they are self explained
 	void ProcessInput();
 	void UpdateGame();
 	void GenerateOutput();
-	
+
 	// Windows that SDL helps us create
 	SDL_Window* mWindow;
 
 	// The Renderer that helps us in drawing 2D graphics
 	SDL_Renderer* mRenderer;
-	
+
+	//  Actor in scene variables
+	std::vector<class Actor*> mActors;
+	std::vector<class Actor*> mPendingActors;
+
+	bool mUpdatingActors;
 	// Positions of game objects as vectors in 2D
 	Vector2 mPaddlePos;
 	int mPaddleDir;
@@ -35,7 +52,9 @@ private:
 
 	Vector2 mBallPos;
 	Vector2 mBallVel;
-	// Delta time 
+
+
+	// Delta time
 	Uint32 mTicksCount;
 
 	Paddle player1;

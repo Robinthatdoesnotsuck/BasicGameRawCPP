@@ -1,0 +1,3 @@
+/home/colalinux/Desktop/Projects/C++/BasicGameRawCPP/cmake-build-debug/CMakeFiles/BasicGameRawCPP.dir
+/home/colalinux/Desktop/Projects/C++/BasicGameRawCPP/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/colalinux/Desktop/Projects/C++/BasicGameRawCPP/cmake-build-debug/CMakeFiles/rebuild_cache.dir

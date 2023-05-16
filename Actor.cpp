@@ -1,7 +1,8 @@
 #include "Actor.h"
 
 
-Actor::Actor(class Game* game) {
+Actor::Actor(class Game* game)
+        :mState(EActive) {
     
 }
 
@@ -53,4 +54,12 @@ float Actor::getScale() {
 
 float Actor::getRotation() {
     return mRotation;
+}
+
+Actor::State Actor::getState() {
+    return Actor::EPaused;
+}
+
+void Actor::setState(Actor::State newState) {
+    mState = newState;
 }

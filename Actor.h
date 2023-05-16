@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "Component.h"
+
 class Actor {
 public:
     enum State {
@@ -9,23 +10,29 @@ public:
     };
 
     // Constructor / Destructor
-    Actor(class Game* game);
+    explicit Actor(class Game* game);
     virtual ~Actor();
 
     // Update Function called from Game
     void Update(float deltaTime);
     // Update all components attached to the actor
     void UpdateComponents(float deltaTime);
-    // Any actor specifict update code this has to be overridable
+    // Any actor specific update code this has to be overridable
     virtual void UpdateActor(float deltaTime);
 
     // getters/setters
+    // Position
     void setPosition(Vector2 Position) ;
-    void setScale(float scale);
-    void setRotation(float rotation);
     Vector2 getPosition();
-    float getScale();
+    // Rotation
     float getRotation();
+    void setRotation(float rotation);
+    // Scale
+    float getScale();
+    void setScale(float scale);
+    // State variable
+    State getState();
+    void setState(State newState);
 
     // ADD or REMOVE components
     void AddComponent(class Component* component);
